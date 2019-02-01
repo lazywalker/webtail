@@ -12,8 +12,10 @@ clean:
 	rm ${APP_NAME}
 	rm -rf build/
 
-release:
-	mkdir -p build/${RELEASE}
+release:clean .IGNORE
+
+.IGNORE:
+	mkdir -p ${RELEASE}
 	#linux
 	CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -o ${APP_NAME} -ldflags ${LDFLAGS} && tar zcfv "${RELEASE}/${APP_NAME}-linux-386.tar.gz" ${APP_NAME}
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${APP_NAME} -ldflags ${LDFLAGS} && tar zcfv "${RELEASE}/${APP_NAME}-linux-amd64.tar.gz" ${APP_NAME} 
