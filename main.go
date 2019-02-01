@@ -7,7 +7,7 @@ import (
 )
 
 //AppVersion 1.0
-const AppVersion = "1.0"
+var AppVersion = "1.0"
 
 var (
 	basedir, address string
