@@ -1,5 +1,5 @@
 GIT_VER=$(shell git rev-parse --short HEAD)
-VER="1.0"
+VER="1.0.1"
 APP_VERSION=${VER}.${GIT_VER}
 RELEASE="build/release-${APP_VERSION}"
 APP_NAME="webtail"
@@ -9,7 +9,7 @@ all:
 	go build -ldflags ${LDFLAGS}
 
 clean:
-	rm ${APP_NAME}
+	rm -f ${APP_NAME}
 	rm -rf build/
 
 release:clean .IGNORE
