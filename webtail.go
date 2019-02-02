@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -19,6 +20,21 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+func index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	log.Printf("index")
+
+	files, _ := filepath.Glob(basedir + "/*.log")
+	// urls := [len(files)]string
+
+	for i, v := range files {
+		path := strings.Split(v, "/")
+		filename := path[len(path)-1]
+		files[i] = fmt.Sprintf("<li><a href=\"show/%s\">%s</a></li>", strings.TrimRight(filename, ".log"), filename)
+	}
+
+	indexTemplate.Execute(w, strings.Join(files, ""))
+}
+
 func home(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	filename := ps.ByName("name")
 	if strings.Contains(filename, "/") || filename == "" {
@@ -26,7 +42,7 @@ func home(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		r.Body.Close()
 		return
 	}
-	homeTemplateSimple.Execute(w, "ws://"+r.Host+"/log/"+filename)
+	homeTemplate.Execute(w, "ws://"+r.Host+"/log/"+filename)
 }
 
 func viewLog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -133,6 +149,7 @@ func serve(address, logDir string) (listener *net.Listener, err error) {
 	}
 	router := httprouter.New()
 	router.GET("/log/:name", viewLog)
+	router.GET("/", index)
 	router.GET("/show/:name", home)
 	log.Printf("WS Log Server on %s", l.Addr())
 	go func() { log.Fatal(http.Serve(l, router)) }()
@@ -216,7 +233,30 @@ func tailN(filename string, numLines int) (string, error) {
 	return "", err
 }
 
-var homeTemplateSimple = template.Must(template.New("").Parse(`
+var indexTemplate = template.Must(template.New("").Parse(`
+	<!DOCTYPE html>
+	<html>
+	<head>
+	<meta charset="utf-8">
+	<style type="text/css">
+        body {
+            font: 14px/1.5 monaco, "Courier New", Courier, monospace;
+            margin: 0px;
+			padding: 10px;
+			display:inline-block;
+        }
+	</style>
+	</head>
+	<body>
+	<h1>Log files</h1>
+	<ul>
+	{{.}}
+	</ul>
+	</body>
+	</html>
+	`))
+
+var homeTemplate = template.Must(template.New("").Parse(`
 	<!DOCTYPE html>
 	<html>
 	<head>
